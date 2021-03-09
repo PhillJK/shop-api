@@ -1,13 +1,21 @@
 require("dotenv").config();
 
+//Express setup
 const express = require("express");
-const morgan = require("morgan");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+//Routes related imports
 const productsRoutes = require("./routes/products");
 const ordersRouter = require("./routes/orders");
 
+//Middleware related imports
+const morgan = require("morgan");
+const corsMiddleware = require("./middleware/corsMiddleware");
+const createErrorMiddleware = require("./middleware/createErrorMiddleware");
+const sendErrorMiddleware = require("./middleware/sendErrorMiddleware");
+
+//DB related imports
 const mongoose = require("mongoose");
 
 //connect to db
@@ -25,26 +33,15 @@ mongoose
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
+app.use(corsMiddleware);
 
 //routes
 app.use("/products", productsRoutes);
 app.use("/orders", ordersRouter);
 
 //error handling middlewares
-app.use((req, res, next) => {
-    const error = new Error("Not found");
-    error.status = 404;
-    next(error);
-});
-
-app.use((error, req, res, next) => {
-    res.status(error.status || 500);
-    res.json({
-        error: {
-            message: error.message
-        }
-    });
-});
+app.use(createErrorMiddleware);
+app.use(sendErrorMiddleware);
 
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
