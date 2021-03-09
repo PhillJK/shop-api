@@ -31,17 +31,16 @@ router.post("/", (req, res, next) => {
         price
     });
 
-    //Save a product
-    product.save().catch(err => {
-        console.error(err);
-        res.status(500).json({ message: "Cannot save", err });
-    });
-
-    //Send a response
-    res.status(201).json({
-        message: "Product has been created",
-        createdProduct: product
-    });
+    //Save a product and send a response
+    product
+        .save()
+        .then(data =>
+            res.status(200).json({ message: "Product has been created", data })
+        )
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ message: "Cannot save", err });
+        });
 });
 
 // GET /products/:id
