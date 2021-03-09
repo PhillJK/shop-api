@@ -1,14 +1,43 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
+
+//Models realted imports
+const Product = require("../models/product.model");
 
 // GET /products
 router.get("/", (req, res, next) => {
-    res.status(200).json({ hello: "it's products page, Get method" });
+    //Find and send products
+    Product.find({})
+        .then(products =>
+            res
+                .status(200)
+                .json({ message: "Products retrieved", data: products })
+        )
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ message: "Cannot retrieve products", err });
+        });
 });
 
 // POST /products
 router.post("/", (req, res, next) => {
-    const product = ({ productName, price } = req.body);
+    const { productName, price } = req.body;
+
+    //Create a product
+    const product = new Product({
+        _id: new mongoose.Types.ObjectId(),
+        productName,
+        price
+    });
+
+    //Save a product
+    product.save().catch(err => {
+        console.error(err);
+        res.status(500).json({ message: "Cannot save", err });
+    });
+
+    //Send a response
     res.status(201).json({
         message: "Product has been created",
         createdProduct: product
