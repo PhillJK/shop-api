@@ -5,9 +5,8 @@ const mongoose = require("mongoose");
 //Models realted imports
 const Product = require("../models/product.model");
 
-// GET /products
+// GET /products : Send all available products
 router.get("/", (req, res, next) => {
-    //Get all products and send them
     Product.find({})
         .exec()
         .then(products =>
@@ -27,25 +26,23 @@ router.get("/", (req, res, next) => {
         });
 });
 
-// POST /products
+// POST /products : Create a new product
 router.post("/", (req, res, next) => {
-    if (!req.body) {
+    if (!req.body.productName || !req.body.price) {
         return res.status(400).json({
             status: 400,
-            message: "Request body is empty"
+            message: "Request body is empty or does not contain required data"
         });
     }
 
     const { productName, price } = req.body;
 
-    //Create a product
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         productName,
         price
     });
 
-    //Save a product and send it
     product
         .save()
         .then(data =>
@@ -65,11 +62,10 @@ router.post("/", (req, res, next) => {
         });
 });
 
-// GET /products/:id
+// GET /products/:id : Find by id and send the product
 router.get("/:id", (req, res, next) => {
     const { id } = req.params;
 
-    //Find product by ID and send it
     Product.findById(id)
         .exec()
         .then(data => {
@@ -83,7 +79,7 @@ router.get("/:id", (req, res, next) => {
             } else {
                 res.status(404).json({
                     status: 404,
-                    message: `Product with the id of ${id} not found`
+                    message: `Product with the id of ${id} is not found`
                 });
             }
         })
@@ -97,13 +93,10 @@ router.get("/:id", (req, res, next) => {
         });
 });
 
-// PATCH /products/:id
+// PATCH /products/:id : Find and update properties of the existing product
 router.patch("/:id", (req, res, next) => {
     const { id } = req.params;
-    // const updateOps = {};
-    // for (const ops of req.body) {
-    //     updateOps[ops.propname] = ops.value;
-    // }
+
     if (!req.body) {
         return res
             .status(400)
@@ -116,10 +109,18 @@ router.patch("/:id", (req, res, next) => {
     )
         .exec()
         .then(data => {
-            res.status(200).json({
-                message: `Product with id of ${id} was updated`,
-                data
-            });
+            if (data) {
+                res.status(200).json({
+                    status: 200,
+                    message: `Product with id of ${id} was updated`,
+                    data
+                });
+            } else {
+                res.status(404).json({
+                    status: 404,
+                    message: `Product with the id of ${id} is not found`
+                });
+            }
         })
         .catch(err => {
             console.error(err);
@@ -131,10 +132,10 @@ router.patch("/:id", (req, res, next) => {
         });
 });
 
-// DELETE /products/:id
+// DELETE /products/:id : Delete the product with certain ID
 router.delete("/:id", (req, res, next) => {
     const { id } = req.params;
-    //Delete the product with certain ID
+
     Product.findByIdAndDelete({ _id: id })
         .exec()
         .then(data => {
