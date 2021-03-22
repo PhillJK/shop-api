@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 //Models realted imports
 const Product = require("../models/product.model");
 
-// GET /products : Send all available products
+// GET /products : Find and send all available products
 router.get("/", (req, res, next) => {
     Product.find({})
         .select("productName price _id")
@@ -34,6 +34,7 @@ router.get("/", (req, res, next) => {
 router.post("/", (req, res, next) => {
     if (!req.body.productName || !req.body.price) {
         return res.status(400).json({
+            success: false,
             status: 400,
             message: "Request body is empty or does not contain required data"
         });
@@ -62,7 +63,7 @@ router.post("/", (req, res, next) => {
             res.status(500).json({
                 success: false,
                 status: 500,
-                message: "Failed to create product",
+                message: "Failed to create a product",
                 err
             });
         });
@@ -153,6 +154,7 @@ router.delete("/:id", (req, res, next) => {
     const { id } = req.params;
 
     Product.findByIdAndDelete({ _id: id })
+        .select("_id productName price")
         .exec()
         .then(data => {
             //Check if the product with the ID exists, otherwise send 404 error
