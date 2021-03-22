@@ -8,17 +8,21 @@ const Product = require("../models/product.model");
 // GET /products : Send all available products
 router.get("/", (req, res, next) => {
     Product.find({})
+        .select("productName price _id")
         .exec()
         .then(products =>
             res.status(200).json({
+                success: true,
                 status: 200,
                 message: "Products was retrieved",
+                count: products.length,
                 data: products
             })
         )
         .catch(err => {
             console.error(err);
             res.status(500).json({
+                success: false,
                 status: 500,
                 message: "Failed to get products",
                 err
@@ -47,6 +51,7 @@ router.post("/", (req, res, next) => {
         .save()
         .then(data =>
             res.status(200).json({
+                success: true,
                 status: 200,
                 message: "Product has been created",
                 data
@@ -55,6 +60,7 @@ router.post("/", (req, res, next) => {
         .catch(err => {
             console.error(err);
             res.status(500).json({
+                success: false,
                 status: 500,
                 message: "Failed to create product",
                 err
@@ -67,17 +73,20 @@ router.get("/:id", (req, res, next) => {
     const { id } = req.params;
 
     Product.findById(id)
+        .select("productName price _id")
         .exec()
         .then(data => {
             //Check if the product with the ID exists, otherwise send 404 error
             if (data) {
                 res.status(200).json({
+                    success: true,
                     status: 200,
                     message: `Product with the id of ${id} was retrieved`,
                     data
                 });
             } else {
                 res.status(404).json({
+                    success: false,
                     status: 404,
                     message: `Product with the id of ${id} is not found`
                 });
@@ -86,6 +95,7 @@ router.get("/:id", (req, res, next) => {
         .catch(err => {
             console.error(err);
             res.status(500).json({
+                success: false,
                 status: 500,
                 message: `Failed to get the product with the id of ${id}`,
                 err
@@ -98,9 +108,11 @@ router.patch("/:id", (req, res, next) => {
     const { id } = req.params;
 
     if (!req.body) {
-        return res
-            .status(400)
-            .json({ status: 400, message: "Request body is empty" });
+        return res.status(400).json({
+            success: false,
+            status: 400,
+            message: "Request body is empty"
+        });
     }
     Product.findByIdAndUpdate(
         { _id: id },
@@ -109,14 +121,17 @@ router.patch("/:id", (req, res, next) => {
     )
         .exec()
         .then(data => {
+            // Check if the product with the ID exists, otherwise send 404 error
             if (data) {
                 res.status(200).json({
+                    success: false,
                     status: 200,
                     message: `Product with id of ${id} was updated`,
                     data
                 });
             } else {
                 res.status(404).json({
+                    success: false,
                     status: 404,
                     message: `Product with the id of ${id} is not found`
                 });
@@ -125,6 +140,7 @@ router.patch("/:id", (req, res, next) => {
         .catch(err => {
             console.error(err);
             res.status(500).json({
+                success: false,
                 status: 500,
                 message: `Failed to update product with id of ${id}`,
                 err
@@ -142,12 +158,14 @@ router.delete("/:id", (req, res, next) => {
             //Check if the product with the ID exists, otherwise send 404 error
             if (data) {
                 res.status(200).json({
+                    success: true,
                     status: 200,
                     message: `Product with the id of ${id} was deleted`,
                     data
                 });
             } else {
                 res.status(404).json({
+                    success: false,
                     status: 404,
                     message: `Product with the id of ${id} not found`
                 });
@@ -156,6 +174,7 @@ router.delete("/:id", (req, res, next) => {
         .catch(err => {
             console.error(err);
             res.status(500).json({
+                success: false,
                 status: 500,
                 message: `Failed to delete the product with the id of ${id}`,
                 err
