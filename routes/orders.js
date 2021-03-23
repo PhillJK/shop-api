@@ -18,7 +18,7 @@ router.get("/", (req, res, next) => {
                 status: 200,
                 message: "Orders was retrieved",
                 count: data.length,
-                data: data
+                data
             })
         )
         .catch(err => {

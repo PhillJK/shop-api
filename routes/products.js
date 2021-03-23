@@ -1,26 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
-const path = require("path");
-//Multer middleware
-const multer = require("multer");
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "./uploads");
-    },
-    filename: function (req, file, cb) {
-        cb(null, new Date().toISOString() + file.originalname);
-    }
-});
-
-const fileFilter = (req, file, cb) => {
-    if (file.mimetype == "image/jpg" || file.mimetype == "image/png")
-        return cb(null, true);
-    cb(new Error("File type is not supported"), false);
-};
-
-const upload = multer({ storage, limits: 1024 * 1024 * 5, fileFilter });
+//Middlewares
+const uploadMiddleware = require("../middleware/uploadMiddleware");
 
 //Models realted imports
 const Product = require("../models/product.model");
@@ -36,7 +19,7 @@ router.get("/", (req, res, next) => {
                 status: 200,
                 message: "Products was retrieved",
                 count: data.length,
-                data: data
+                data
             })
         )
         .catch(err => {
@@ -51,7 +34,7 @@ router.get("/", (req, res, next) => {
 });
 
 // POST /products : Create a new product
-router.post("/", upload.single("productImage"), (req, res, next) => {
+router.post("/", uploadMiddleware.single("productImage"), (req, res, next) => {
     if (!req.body.productName || !req.body.price) {
         return res.status(400).json({
             success: false,
