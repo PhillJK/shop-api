@@ -1,6 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
+const path = require("path");
+//Multer middleware
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "./uploads");
+    },
+    filename: function (req, file, cb) {
+        cb(null, new Date().toISOString() + file.originalname);
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype == "image/jpg" || file.mimetype == "image/png")
+        return cb(null, true);
+    cb(new Error("File type is not supported"), false);
+};
+
+const upload = multer({ storage, limits: 1024 * 1024 * 5, fileFilter });
 
 //Models realted imports
 const Product = require("../models/product.model");
@@ -8,15 +28,15 @@ const Product = require("../models/product.model");
 // GET /products : Find and send all available products
 router.get("/", (req, res, next) => {
     Product.find({})
-        .select("productName price _id")
+        .select("productName productImage price _id")
         .exec()
-        .then(products =>
+        .then(data =>
             res.status(200).json({
                 success: true,
                 status: 200,
                 message: "Products was retrieved",
-                count: products.length,
-                data: products
+                count: data.length,
+                data: data
             })
         )
         .catch(err => {
@@ -31,7 +51,7 @@ router.get("/", (req, res, next) => {
 });
 
 // POST /products : Create a new product
-router.post("/", (req, res, next) => {
+router.post("/", upload.single("productImage"), (req, res, next) => {
     if (!req.body.productName || !req.body.price) {
         return res.status(400).json({
             success: false,
@@ -45,7 +65,8 @@ router.post("/", (req, res, next) => {
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         productName,
-        price
+        price,
+        productImage: req.file.path
     });
 
     product
@@ -74,7 +95,7 @@ router.get("/:id", (req, res, next) => {
     const { id } = req.params;
 
     Product.findById(id)
-        .select("productName price _id")
+        .select("productName productImage price _id")
         .exec()
         .then(data => {
             //Check if the product with the ID exists, otherwise send 404 error
@@ -154,7 +175,7 @@ router.delete("/:id", (req, res, next) => {
     const { id } = req.params;
 
     Product.findByIdAndDelete({ _id: id })
-        .select("_id productName price")
+        .select("_id productName productIamge price")
         .exec()
         .then(data => {
             //Check if the product with the ID exists, otherwise send 404 error

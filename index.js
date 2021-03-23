@@ -1,5 +1,7 @@
 require("dotenv").config();
 
+const path = require("path");
+
 //Express setup
 const express = require("express");
 const app = express();
@@ -33,6 +35,7 @@ mongoose
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
+app.use("/uploads", express.static(path.resolve(__dirname, "uploads")));
 app.use(corsMiddleware);
 
 //routes

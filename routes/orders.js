@@ -12,13 +12,13 @@ router.get("/", (req, res, next) => {
         .select("_id product quantity")
         .populate("product", "_id productName price")
         .exec()
-        .then(orders =>
+        .then(data =>
             res.status(200).json({
                 success: true,
                 status: 200,
                 message: "Orders was retrieved",
-                count: orders.length,
-                data: orders
+                count: data.length,
+                data: data
             })
         )
         .catch(err => {
