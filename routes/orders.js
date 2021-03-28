@@ -2,9 +2,14 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 
+//Middleware related imports
+const checkAuthMiddleware = require("../middleware/checkAuthMiddleware");
+
 //Models related imports
 const Order = require("../models/order.model");
 const Product = require("../models/product.model");
+
+router.use(checkAuthMiddleware);
 
 //GET /orders : Find and send all orders
 router.get("/", (req, res, next) => {
@@ -50,11 +55,12 @@ router.post("/", (req, res, next) => {
         .exec()
         .then(data => {
             if (!data) {
-                return res.status(404).json({
-                    success: false,
-                    status: 404,
-                    message: `Product with the id of ${productId} does not exists`
-                });
+                //Verify that the product exists or throw an error and break out the chain
+                const error = new Error(
+                    `Product with the id of ${productId} does not exists`
+                );
+                error.status = 404;
+                throw error;
             }
 
             //Create the order
@@ -76,10 +82,13 @@ router.post("/", (req, res, next) => {
         )
         .catch(err => {
             console.error(err);
-            res.status(500).json({
+
+            const statusCode = err.status || 500;
+            const message = err.message || "Failed to create the order";
+            res.status(statusCode).json({
                 success: false,
-                status: 500,
-                message: "Failed to create an order",
+                status: statusCode,
+                message,
                 err
             });
         });

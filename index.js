@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 //Routes related imports
 const productsRoutes = require("./routes/products");
 const ordersRouter = require("./routes/orders");
+const userRouter = require("./routes/user");
 
 //Middleware related imports
 const morgan = require("morgan");
@@ -19,12 +20,14 @@ const sendErrorMiddleware = require("./middleware/sendErrorMiddleware");
 
 //DB related imports
 const mongoose = require("mongoose");
+const { createIndexes } = require("./models/user.model");
 
 //connect to db
 mongoose
     .connect(process.env.MONGODB_URL, {
         useNewUrlParser: true,
-        useUnifiedTopology: true
+        useUnifiedTopology: true,
+        useCreateIndex: true
     })
     .then(() => {
         console.log("Connected to db");
@@ -41,6 +44,7 @@ app.use(corsMiddleware);
 //routes
 app.use("/products", productsRoutes);
 app.use("/orders", ordersRouter);
+app.use("/user", userRouter);
 
 //error handling middlewares
 app.use(createErrorMiddleware);
