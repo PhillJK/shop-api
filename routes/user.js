@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 //Athentication related imports
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const checkAutheMiddleware = require("../middleware/checkAuthMiddleware");
 
 //Models related imports
 const User = require("../models/user.model");
@@ -125,7 +126,7 @@ router.post("/signin", (req, res, next) => {
 });
 
 // DELETE  /user/:userId : Delete existing user
-router.delete("/:userId", (req, res, next) => {
+router.delete("/:userId", checkAutheMiddleware, (req, res, next) => {
     const { userId } = req.params;
 
     User.deleteOne({ _id: userId })
