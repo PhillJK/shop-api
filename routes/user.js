@@ -91,8 +91,8 @@ router.post("/signin", (req, res, next) => {
                 return { result, data };
             }
         })
-        .then(({ result: isComparisonSuccessed, data: user }) => {
-            if (isComparisonSuccessed) {
+        .then(({ result: isValid, data: user }) => {
+            if (isValid) {
                 const token = jwt.sign(
                     { email: user.email, userId: user._id },
                     process.env.JWT_SECRET,
